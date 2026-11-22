@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cutmesh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cutmesh
+      POSTGRES_USER: cutmesh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - cutmesh_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cutmesh -d cutmesh"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  control-plane:
+    build:
+      context: ./control-plane
+      dockerfile: Dockerfile
+    container_name: cutmesh-control-plane
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cutmesh
+      SPRING_DATASOURCE_USERNAME: cutmesh
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      CUTMESH_JWT_SECRET: ${CUTMESH_JWT_SECRET:?set CUTMESH_JWT_SECRET}
+      CUTMESH_PUBLIC_HUB_URL: ${CUTMESH_PUBLIC_HUB_URL:-http://localhost:30885}
+      CUTMESH_ADMIN_EMAIL: ${CUTMESH_ADMIN_EMAIL:-admin@cutmesh.local}
+      CUTMESH_ADMIN_PASSWORD: ${CUTMESH_ADMIN_PASSWORD:-}
+      CUTMESH_WORKER_DOCKER_IMAGE: ${CUTMESH_WORKER_DOCKER_IMAGE:-ghcr.io/massimolauri/cutmesh-worker:latest}
+      CUTMESH_GOOGLE_CLIENT_ID: ${CUTMESH_GOOGLE_CLIENT_ID:-}
+      CUTMESH_STRICT_DIRECT: ${CUTMESH_STRICT_DIRECT:-1}
+    ports:
+      - "${CONTROL_PLANE_PORT:-30885}:8085"
+    volumes:
+      - cutmesh_models:/app/models
+      - cutmesh_cache:/data/cutmesh
+
+  web-dashboard:
+    build:
+      context: ./web-dashboard
+      dockerfile: Dockerfile
+    container_name: cutmesh-web-dashboard
+    restart: unless-stopped
+    depends_on:
+      - control-plane
+    ports:
+      - "${DASHBOARD_PORT:-30300}:3000"
+
+volumes:
+  cutmesh_pgdata:
+  cutmesh_models:
+  cutmesh_cache:

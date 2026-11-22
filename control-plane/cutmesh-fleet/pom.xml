@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.cutmesh</groupId>
+        <artifactId>cutmesh-control-plane</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>cutmesh-fleet</artifactId>
+    <name>Cutmesh Fleet</name>
+    <description>GPU worker enrollment tokens, P2P heartbeat ingestion, stale worker eviction, and orchestration DIP port</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.cutmesh</groupId>
+            <artifactId>cutmesh-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.cutmesh</groupId>
+            <artifactId>cutmesh-audit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.cutmesh</groupId>
+            <artifactId>cutmesh-iam</artifactId>
+        </dependency>
+    </dependencies>
+</project>

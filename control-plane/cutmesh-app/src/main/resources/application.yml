@@ -1,0 +1,46 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: cutmesh-control-plane
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cutmesh}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:cutmesh}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+
+cutmesh:
+  public-hub-url: ${CUTMESH_PUBLIC_HUB_URL:${SYNAPSE_PUBLIC_HUB_URL:http://localhost:8085}}
+  worker-heartbeat-timeout-seconds: 30
+  autopilot-enabled: true
+  jwt:
+    secret: ${CUTMESH_JWT_SECRET:${SYNAPSE_JWT_SECRET:}}
+  google:
+    client-id: ${CUTMESH_GOOGLE_CLIENT_ID:${SYNAPSE_GOOGLE_CLIENT_ID:}}
+  worker:
+    docker-image: ${CUTMESH_WORKER_DOCKER_IMAGE:${SYNAPSE_WORKER_DOCKER_IMAGE:ghcr.io/massimolauri/cutmesh-worker:latest}}
+  bootstrap:
+    demo-accounts: ${CUTMESH_BOOTSTRAP_DEMO_ACCOUNTS:${SYNAPSE_BOOTSTRAP_DEMO_ACCOUNTS:false}}
+    admin-email: ${CUTMESH_ADMIN_EMAIL:${SYNAPSE_ADMIN_EMAIL:admin@cutmesh.local}}
+    admin-password: ${CUTMESH_ADMIN_PASSWORD:${SYNAPSE_ADMIN_PASSWORD:}}
+  control-plane:
+    public-hub-url: ${CUTMESH_PUBLIC_HUB_URL:${SYNAPSE_PUBLIC_HUB_URL:http://localhost:8085}}
+    pod-advertise-host: ${CUTMESH_POD_ADVERTISE_HOST:${SYNAPSE_POD_ADVERTISE_HOST:127.0.0.1}}
+    worker-heartbeat-timeout-seconds: 30
+    autopilot-interval-ms: 3000
+  cluster:
+    hazelcast:
+      enabled: ${CUTMESH_HAZELCAST_ENABLED:${SYNAPSE_HAZELCAST_ENABLED:false}}
+      cluster-name: ${CUTMESH_HAZELCAST_CLUSTER_NAME:${SYNAPSE_HAZELCAST_CLUSTER_NAME:cutmesh-control-plane}}
+      k8s-service-name: ${CUTMESH_HAZELCAST_K8S_SERVICE:${SYNAPSE_HAZELCAST_K8S_SERVICE:}}
+      k8s-namespace: ${CUTMESH_HAZELCAST_K8S_NAMESPACE:${SYNAPSE_HAZELCAST_K8S_NAMESPACE:}}
+      tcp-members: ${CUTMESH_HAZELCAST_TCP_MEMBERS:${SYNAPSE_HAZELCAST_TCP_MEMBERS:}}

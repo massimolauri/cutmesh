@@ -1,0 +1,78 @@
+{
+  "model_id": "qwen3.8-27b",
+  "display_name": "Qwen 3.8 27B (Unsloth UD-Q4_K_M)",
+  "architecture": "qwen35",
+  "gguf_filename": "Qwen3.8-27B-UD-Q4_K_M.gguf",
+  "match_patterns": [
+    "qwen3.8-27b",
+    "qwen3.8_27b",
+    "qwen35-27b"
+  ],
+  "canonical_hf_url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-UD-Q4_K_M.gguf",
+  "sharding": {
+    "trunk_layers": 64,
+    "mtp_layers": [64],
+    "layer_group_alignment": 4,
+    "preferred_cut_layers": [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60],
+    "allowed_cut_layers": [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60],
+    "dflash_tap_layers": [],
+    "layer_weights_mib": [
+      203.16, 208.43, 204.44, 215.59,
+      207.10, 208.19, 211.08, 199.42,
+      203.51, 201.79, 208.19, 188.79,
+      200.85, 179.83, 172.14, 175.47,
+      188.47, 193.78, 196.16, 198.09,
+      206.16, 213.74, 217.73, 204.06,
+      237.26, 255.62, 241.01, 220.00,
+      201.79, 198.04, 213.35, 202.62,
+      210.69, 203.35, 213.35, 212.15,
+      213.51, 201.94, 222.10, 210.71,
+      218.82, 215.07, 206.16, 199.42,
+      201.79, 197.10, 201.79, 197.54,
+      200.85, 209.76, 231.01, 216.02,
+      234.76, 231.01, 230.07, 236.60,
+      247.80, 245.38, 243.82, 237.27,
+      251.63, 241.63, 251.63, 269.22
+    ],
+    "non_block_master_weights_mib": 1676.68,
+    "kv_vram_per_1k_tokens_mb": 36,
+    "stage0_pin_output_head": true,
+    "stage0_pin_mtp_layers": true,
+    "stage0_extra_vram_reserve_mb": 1024,
+    "worker_vram_reserve_mb": 1024,
+    "max_wan_nodes": 3,
+    "max_lan_nodes": 4
+  },
+  "speculative": {
+    "enabled": true,
+    "spec_type": "ngram-mod,draft-mtp",
+    "draft_model_filename": "",
+    "draft_model_hf_url": "",
+    "draft_weights_mib": 334.73,
+    "draft_max": 5,
+    "draft_min": 1,
+    "draft_p_min": 0.50
+  },
+  "engine": {
+    "max_context_length": 262144,
+    "default_ctx_size": 262144,
+    "default_ubatch_size": 512,
+    "parallel_slots": 1,
+    "continuous_batching": true,
+    "ctx_checkpoints": 0,
+    "cache_ram_mib": 0,
+    "cache_prompt": true,
+    "cache_idle_slots": true,
+    "reasoning_format": "deepseek",
+    "no_warmup": true,
+    "extra_args": ["-fa", "on", "-ctk", "q8_0", "-ctv", "q8_0", "-ctkd", "q8_0", "-ctvd", "q8_0"]
+  },
+  "sampling": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "thinking_default": "enabled"
+  }
+}

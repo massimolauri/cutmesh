@@ -1,0 +1,28 @@
+server:
+  port: 0
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:cutmesh_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+
+cutmesh:
+  jwt:
+    secret: test-ephemeral-signing-key-32bytes-minimum-2026
+  public:
+    hub-url: http://localhost:8085
+  worker:
+    docker-image: ghcr.io/massimolauri/cutmesh-worker:latest
+  bootstrap:
+    demo-accounts: false
+    admin-email: admin@cutmesh.test
+    admin-password: AdminTestPass!2026
+  audit:
+    rust-binary-path: non-existent-rust-binary
+    models-dir: ../models

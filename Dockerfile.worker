@@ -1,0 +1,94 @@
+# ==============================================================================
+# Cutmesh — zero-config GPU worker image
+#
+#   docker run --gpus all -p 40000:40000/udp <image>
+#
+# Starts a worker immediately: unique persistent identity, direct P2P (no relay),
+# public ip:port auto-detected (CUTMESH_PUBLIC_ADDR > Vast.ai PUBLIC_IPADDR +
+# VAST_UDP_PORT_40000 > HTTP probe). Any argument runs the binary directly
+# (e.g. `<image> gateway --model ...`).
+#
+# llama.cpp is built for Turing..Blackwell (sm_75..sm_120) with CPU dynamic
+# dispatch, and patched so ggml-rpc queries the worker tensor cache for every
+# tensor > 64 KB (upstream: > 10 MB), matching `prewarm-cache`.
+# ==============================================================================
+
+ARG LLAMA_CPP_REF=master
+# Override for faster local builds, e.g. --build-arg CUDA_ARCHS=89 (RTX 40xx only)
+ARG CUDA_ARCHS="75;80;86;89;90;100;120"
+
+# ---------- llama.cpp (llama-server + rpc-server) ----------
+FROM nvidia/cuda:12.8.0-devel-ubuntu24.04 AS llamacpp-builder
+ARG LLAMA_CPP_REF
+ARG CUDA_ARCHS
+# Parallel compile jobs (default: all cores). Lower it if the build runs out of memory.
+ARG BUILD_JOBS=""
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake git ca-certificates libgomp1 python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+RUN git clone --depth 1 --branch "${LLAMA_CPP_REF}" https://github.com/ggml-org/llama.cpp.git .
+
+# Apply architectural ggml-rpc & transport optimizations (TX coalescing, async SET_TENSOR,
+# content-addressed graph caching, CUDA-exact get_alloc_size, HASH_THRESHOLD = 65536).
+COPY scripts/patch_ggml_rpc.py /tmp/patch_ggml_rpc.py
+RUN python3 /tmp/patch_ggml_rpc.py /build
+
+RUN cmake -B build \
+      -DGGML_NATIVE=OFF \
+      -DGGML_BACKEND_DL=ON \
+      -DGGML_CPU_ALL_VARIANTS=ON \
+      -DGGML_CUDA=ON \
+      -DGGML_RPC=ON \
+      -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
+      -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build --config Release -j"${BUILD_JOBS:-$(nproc)}" --target llama-server && \
+    (cmake --build build --config Release -j"${BUILD_JOBS:-$(nproc)}" --target rpc-server || \
+     cmake --build build --config Release -j"${BUILD_JOBS:-$(nproc)}" --target ggml-rpc-server) && \
+    cd build/bin && \
+    if [ -f rpc-server ] && [ ! -e ggml-rpc-server ]; then ln -s rpc-server ggml-rpc-server; fi && \
+    test -x ggml-rpc-server && test -x llama-server
+
+# ---------- cutmesh (rust:1-bookworm -> rustc >= 1.91 required by iroh 1.4) ----------
+FROM rust:1-bookworm AS rust-builder
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+COPY models ./models
+COPY src ./src
+RUN cargo build --release --bin cutmesh
+
+# ---------- runtime ----------
+FROM nvidia/cuda:12.8.0-runtime-ubuntu24.04
+ENV DEBIAN_FRONTEND=noninteractive
+# libcublas is already part of the CUDA runtime image (held package): don't reinstall it.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+    # Data-center-only CUDA forward-compat libs break consumer GeForce RTX GPUs
+    && rm -rf /usr/local/cuda*/compat /etc/ld.so.conf.d/*compat* \
+    && ldconfig
+
+COPY --from=llamacpp-builder /build/build/bin/ /opt/cutmesh/llamacpp/
+COPY --from=rust-builder /build/target/release/cutmesh /usr/local/bin/cutmesh
+COPY models /opt/cutmesh/models
+COPY docker/worker-entrypoint.sh /usr/local/bin/worker-entrypoint.sh
+RUN chmod +x /usr/local/bin/cutmesh /usr/local/bin/worker-entrypoint.sh /opt/cutmesh/llamacpp/*
+
+ENV LD_LIBRARY_PATH="/opt/cutmesh/llamacpp:/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64" \
+    CUTMESH_DATA_DIR="/data/cutmesh" \
+    LLAMA_CACHE="/data/cutmesh/cache" \
+    CUTMESH_QUIC_PORT="40000" \
+    CUTMESH_RPC_PORT="50052" \
+    RUST_LOG="cutmesh=info" \
+    # CUDA 12.x minor-version compatibility: the image (12.8, needed for Blackwell sm_120)
+    # runs on any driver >= 525. Without this, nvidia-container-cli refuses drivers that
+    # advertise < 12.8 (e.g. 560.x = CUDA 12.6), common on home GPUs.
+    NVIDIA_DISABLE_REQUIRE="1"
+
+# QUIC (direct P2P). ggml-rpc stays on 127.0.0.1 and is reached only through the tunnel.
+EXPOSE 40000/udp
+VOLUME ["/data/cutmesh"]
+
+ENTRYPOINT ["/usr/local/bin/worker-entrypoint.sh"]

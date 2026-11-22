@@ -1,0 +1,14 @@
+target/
+web-dashboard/
+control-plane/
+models/*
+!models/*/
+models/*/*
+!models/*/policy.json
+bin/llamacpp/
+bin/linux_x86_64/llamacpp_bins.tar.gz
+bin/linux_x86_64/llama-server
+bin/linux_x86_64/cutmesh
+.git/
+*.gguf
+*.log

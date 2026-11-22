@@ -1,0 +1,82 @@
+{
+  "model_id": "nemotron-3.5-bolt-74b",
+  "display_name": "NVIDIA Nemotron 3.5 Bolt 74B-A9B 24GB (IQ2_XXS/NVFP4 + DFlash LiLiCorr)",
+  "architecture": "nemotron_h_moe",
+  "gguf_filename": "NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB.gguf",
+  "match_patterns": [
+    "nemotron-3.5-bolt-74b",
+    "nemotron_3.5_bolt_74b",
+    "nemotron-3.5-bolt",
+    "nemotron_h_moe"
+  ],
+  "canonical_hf_url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-GGUF/resolve/main/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB.gguf",
+  "sharding": {
+    "trunk_layers": 88,
+    "mtp_layers": [],
+    "layer_group_alignment": 2,
+    "preferred_cut_layers": [9, 18, 27, 38, 49, 60, 71, 80],
+    "allowed_cut_layers": [
+      2, 4, 6, 9,
+      11, 13, 15, 18,
+      20, 22, 24, 27,
+      29, 31, 33, 35, 38,
+      40, 42, 44, 46, 49,
+      51, 53, 55, 57, 60,
+      62, 64, 66, 68, 71,
+      73, 75, 77, 80,
+      82, 84, 86
+    ],
+    "dflash_tap_layers": [2, 19, 36, 52, 69, 86],
+    "layer_weights_mib": [
+      59.02, 270.59, 59.02, 208.72, 59.02, 270.59, 59.02, 36.14, 376.78,
+      59.02, 301.53, 59.02, 270.59, 59.02, 270.59, 59.02, 36.14, 376.78,
+      59.02, 337.59, 59.02, 582.97, 59.02, 527.28, 59.02, 36.14, 270.59,
+      59.02, 527.28, 59.02, 415.97, 59.02, 376.78, 59.02, 527.28, 59.02, 36.14, 452.03,
+      59.02, 404.60, 59.02, 452.03, 59.02, 582.97, 59.02, 499.47, 59.02, 36.14, 666.47,
+      59.02, 582.97, 59.02, 301.53, 59.02, 452.03, 59.02, 499.47, 59.02, 36.14, 337.59,
+      59.02, 301.53, 59.02, 301.53, 59.02, 270.59, 59.02, 270.59, 59.02, 36.14, 404.60,
+      59.02, 452.03, 59.02, 527.28, 59.02, 582.97, 59.02, 36.14, 666.47,
+      59.02, 582.97, 59.02, 582.97, 59.02, 666.47, 59.02, 666.47
+    ],
+    "non_block_master_weights_mib": 1088.03,
+    "kv_vram_per_1k_tokens_mb": 8,
+    "stage0_pin_output_head": true,
+    "stage0_pin_mtp_layers": false,
+    "stage0_extra_vram_reserve_mb": 2048,
+    "worker_vram_reserve_mb": 1024,
+    "max_wan_nodes": 3,
+    "max_lan_nodes": 4
+  },
+  "speculative": {
+    "enabled": true,
+    "spec_type": "dflash",
+    "draft_model_filename": "NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr.gguf",
+    "draft_model_hf_url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr-GGUF/resolve/main/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr.gguf",
+    "draft_weights_mib": 952.10,
+    "draft_max": 6,
+    "draft_min": 1,
+    "draft_p_min": 0.75
+  },
+  "engine": {
+    "max_context_length": 262144,
+    "default_ctx_size": 262144,
+    "default_ubatch_size": 512,
+    "parallel_slots": 1,
+    "continuous_batching": true,
+    "ctx_checkpoints": 0,
+    "cache_ram_mib": 0,
+    "cache_prompt": false,
+    "cache_idle_slots": false,
+    "reasoning_format": "deepseek",
+    "no_warmup": true,
+    "extra_args": []
+  },
+  "sampling": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 0,
+    "min_p": 0.0,
+    "presence_penalty": 0.0,
+    "thinking_default": "enabled"
+  }
+}
